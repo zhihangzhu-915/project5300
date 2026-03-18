@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Grocery Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f8fbff);
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 42px;
+            color: #0f172a;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .form-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            border-radius: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            margin-top: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        button {
+            margin-top: 22px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 22px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .examples-card {
+            margin-top: 30px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            border-radius: 16px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .dish-tag {
+            background: #e0ecff;
+            color: #1d4ed8;
+            padding: 10px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .note {
+            margin-top: 20px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .examples-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .examples-grid {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Grocery Planner 🛒</h1>
+        <p class="subtitle">
+            Enter dishes, servings, pantry items, and an optional budget. This version uses a built-in local library of 50 dishes.
+        </p>
+
+        <div class="form-card">
+            <form method="POST" action="/generate">
+                <label for="dishes">Dishes</label>
+                <input
+                    type="text"
+                    id="dishes"
+                    name="dishes"
+                    placeholder="e.g. chicken curry, fried rice, salad"
+                >
+                <div class="hint">Separate multiple dishes with commas.</div>
+
+                <label for="servings">Number of servings</label>
+                <input
+                    type="text"
+                    id="servings"
+                    name="servings"
+                    placeholder="e.g. 2"
+                >
+
+                <label for="pantry">Pantry items already available</label>
+                <input
+                    type="text"
+                    id="pantry"
+                    name="pantry"
+                    placeholder="e.g. salt, oil, soy sauce, garlic"
+                >
+
+                <label for="budget">Budget (optional)</label>
+                <input
+                    type="text"
+                    id="budget"
+                    name="budget"
+                    placeholder="e.g. 30"
+                >
+
+                <button type="submit">Generate Grocery List</button>
+            </form>
+        </div>
+
+        <div class="examples-card">
+            <h2>50 Supported Dish Examples</h2>
+            <div class="examples-grid">
+                {% for dish in dish_examples %}
+                    <div class="dish-tag">{{ dish }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="note">
+            Added features: budget check, copy list button, category counts, pantry filtering, and checkbox shopping list.
+        </div>
+    </div>
+</body>
+</html>

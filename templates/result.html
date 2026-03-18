@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grocery List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f8fbff);
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 40px;
+        }
+
+        .summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .summary p {
+            margin: 8px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin: 22px 0 28px 0;
+        }
+
+        .stat-card {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 22px;
+            color: #1d4ed8;
+        }
+
+        .budget-box {
+            background: #fefce8;
+            border: 1px solid #fde68a;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .toolbar {
+            margin-bottom: 22px;
+        }
+
+        .copy-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.06);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #1d4ed8;
+        }
+
+        ul {
+            padding-left: 18px;
+            margin-bottom: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .unknown, .filtered-box {
+            margin-top: 24px;
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .unknown {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+        }
+
+        .filtered-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 28px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 500px) {
+            .stats {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
+    </style>
+    <script>
+        function copyList() {
+            const text = document.getElementById("copyText").innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                alert("Grocery list copied.");
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Grocery List 🛒</h1>
+
+        <div class="summary">
+            <p><strong>Dishes:</strong> {{ dishes | join(', ') }}</p>
+            <p><strong>Servings:</strong> {{ servings }}</p>
+            <p><strong>Pantry items:</strong>
+                {% if pantry %}
+                    {{ pantry | join(', ') }}
+                {% else %}
+                    none
+                {% endif %}
+            </p>
+            <p><strong>Budget:</strong> {{ budget if budget else 'not provided' }}</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <strong>{{ summary_counts.protein }}</strong>
+                Protein
+            </div>
+            <div class="stat-card">
+                <strong>{{ summary_counts.vegetables }}</strong>
+                Vegetables
+            </div>
+            <div class="stat-card">
+                <strong>{{ summary_counts.grains }}</strong>
+                Grains
+            </div>
+            <div class="stat-card">
+                <strong>{{ summary_counts.dairy_other }}</strong>
+                Other
+            </div>
+            <div class="stat-card">
+                <strong>{{ summary_counts.pantry_filtered }}</strong>
+                Pantry Saved
+            </div>
+        </div>
+
+        <div class="budget-box">
+            <p><strong>Estimated Total:</strong> ${{ '%.2f'|format(total_estimated_cost) }}</p>
+            <p><strong>Budget Status:</strong> {{ budget_status }}</p>
+        </div>
+
+        <div class="toolbar">
+            <button class="copy-btn" onclick="copyList()">Copy Grocery List</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>{{ category_labels.protein }}</h2>
+                {% if result.protein %}
+                    <ul>
+                        {% for item in result.protein %}
+                            <li><input type="checkbox"> {{ item.name }} — {{ item.quantity }} — approx. ${{ item.estimated_price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No protein items needed.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>{{ category_labels.vegetables }}</h2>
+                {% if result.vegetables %}
+                    <ul>
+                        {% for item in result.vegetables %}
+                            <li><input type="checkbox"> {{ item.name }} — {{ item.quantity }} — approx. ${{ item.estimated_price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No vegetable items needed.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>{{ category_labels.grains }}</h2>
+                {% if result.grains %}
+                    <ul>
+                        {% for item in result.grains %}
+                            <li><input type="checkbox"> {{ item.name }} — {{ item.quantity }} — approx. ${{ item.estimated_price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No grain items needed.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>{{ category_labels.dairy_other }}</h2>
+                {% if result.dairy_other %}
+                    <ul>
+                        {% for item in result.dairy_other %}
+                            <li><input type="checkbox"> {{ item.name }} — {{ item.quantity }} — approx. ${{ item.estimated_price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty">No extra items needed.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if pantry_filtered_out %}
+        <div class="filtered-box">
+            <strong>Pantry items filtered out:</strong> {{ pantry_filtered_out | join(', ') }}
+        </div>
+        {% endif %}
+
+        {% if unknown_dishes %}
+        <div class="unknown">
+            <strong>Unsupported dish names:</strong> {{ unknown_dishes | join(', ') }}<br>
+            Try using one of the supported dishes shown on the home page.
+        </div>
+        {% endif %}
+
+        <pre id="copyText" style="display:none;">{{ copy_text }}</pre>
+
+        <a class="back-link" href="/">⬅ Back</a>
+    </div>
+</body>
+</html>
